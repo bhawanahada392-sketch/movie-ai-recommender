@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CineMate AI - a warm, enchanted cinema garden for discovering films.">
+    <title>{% block title %}CineMate AI{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="page-body theme-night" data-page="{% block page_id %}home{% endblock %}">
+    <div class="garden-backdrop" aria-hidden="true">
+        <div class="sky-wash"></div>
+        <div class="moon-or-sun"></div>
+        <div class="garden-hill garden-hill-one"></div>
+        <div class="garden-hill garden-hill-two"></div>
+        <div class="garden-mist"></div>
+    </div>
+
+    <div class="storybook-decor" aria-hidden="true">
+        <svg class="branch branch-left" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 310 C40 230 76 174 124 122 C158 86 184 52 196 16" fill="none"/>
+            <path d="M74 194 C42 178 24 154 16 126"/>
+            <path d="M118 128 C88 108 72 80 68 52"/>
+            <ellipse cx="46" cy="168" rx="10" ry="22"/>
+            <ellipse cx="80" cy="192" rx="9" ry="20"/>
+            <ellipse cx="96" cy="92" rx="8" ry="18"/>
+            <ellipse cx="136" cy="112" rx="10" ry="21"/>
+        </svg>
+
+        <svg class="branch branch-right" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg">
+            <path d="M196 310 C180 234 142 174 96 124 C62 86 38 52 26 16" fill="none"/>
+            <path d="M140 190 C172 172 190 150 204 122"/>
+            <path d="M96 126 C126 108 148 82 154 52"/>
+            <ellipse cx="172" cy="164" rx="10" ry="22"/>
+            <ellipse cx="136" cy="190" rx="9" ry="20"/>
+            <ellipse cx="126" cy="92" rx="8" ry="18"/>
+            <ellipse cx="84" cy="116" rx="10" ry="21"/>
+        </svg>
+
+        <div class="lantern lantern-one"><span></span></div>
+        <div class="lantern lantern-two"><span></span></div>
+        <div class="firefly firefly-one"></div>
+        <div class="firefly firefly-two"></div>
+        <div class="firefly firefly-three"></div>
+        <div class="petal petal-one"></div>
+        <div class="petal petal-two"></div>
+        <div class="petal petal-three"></div>
+        <div class="paper-star paper-star-one"></div>
+        <div class="paper-star paper-star-two"></div>
+
+        <svg class="ticket-sprig" viewBox="0 0 150 90" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 24 H132 Q140 24 140 32 V58 Q140 66 132 66 H18 Q10 66 10 58 V32 Q10 24 18 24Z"/>
+            <path d="M48 26 V64"/>
+            <path d="M70 45 C80 31 98 31 106 45 C96 59 80 59 70 45Z"/>
+            <circle cx="88" cy="45" r="5"/>
+        </svg>
+    </div>
+
+    <header class="site-header">
+        <a class="brand-mark" href="{{ url_for('home') }}">CineMate AI</a>
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+            <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+            <a href="{{ url_for('watchlist_page') }}" class="nav-link">Watchlist</a>
+            <a href="{{ url_for('history_page') }}" class="nav-link">History</a>
+            <a href="{{ url_for('ai_companion_page') }}" class="nav-link">AI Companion</a>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer" aria-label="Site footer">
+        <div class="footer-garden" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <blockquote class="footer-quote">
+            “Cinema is a lantern for memories we have not made yet.”
+        </blockquote>
+        <p class="footer-brand">CineMate AI</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

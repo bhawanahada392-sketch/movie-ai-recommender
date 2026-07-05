@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}CineMate AI | Home{% endblock %}
+{% block page_id %}home{% endblock %}
+
+{% block content %}
+<header class="hero" aria-label="Welcome to CineMate AI">
+    <div class="hero-ornament" aria-hidden="true">
+        <span class="tiny-flower flower-one"></span>
+        <span class="tiny-flower flower-two"></span>
+        <span class="tiny-flower flower-three"></span>
+    </div>
+
+    <div class="hero-content">
+        <p class="hero-eyebrow">Welcome to the garden cinema</p>
+        <h1 class="hero-title">CineMate AI</h1>
+        <p class="hero-subtitle">Find stories that stay with you.</p>
+        <p class="hero-description">
+            Wander through a quiet little theatre of moonlit shelves, velvet seats,
+            soft leaves, and handpicked films waiting to become old favorites.
+        </p>
+
+        <section class="search-section" aria-label="Movie search">
+            <form class="search-form" id="search-form" role="search">
+                <label for="movie-search" class="visually-hidden">Search for a movie</label>
+                <div class="search-bar">
+                    <div class="search-input-wrap">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="M16.5 16.5 21 21"></path>
+                        </svg>
+                        <input
+                            type="search"
+                            id="movie-search"
+                            name="movie-search"
+                            placeholder="Search a movie, genre, actor, or describe your mood..."
+                            autocomplete="off"
+                            aria-label="Search for movies, genres, or mood"
+                        >
+                    </div>
+                    <button type="submit" id="search-btn" class="search-btn">
+                        <span class="btn-text">🍿 Discover Movies</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</header>
+
+{% if homepage_rows %}
+<section class="browse-section" aria-label="Browse curated movie rows">
+    <div class="browse-header">
+        <p class="section-eyebrow">Browse stories</p>
+        <h2 class="section-title section-title--small">Discover movies without searching</h2>
+    </div>
+
+    {% for row in homepage_rows %}
+    <div class="home-row" id="row-{{ row.slug }}">
+        <div class="row-label">
+            <p class="row-name">{{ row.title }}</p>
+        </div>
+        <div class="row-cards">
+            {% for movie in row.movies %}
+            <a href="{{ url_for('results_page') }}?q={{ movie.title | urlencode }}" class="row-card" title="{{ movie.title }}">
+                <div class="row-poster">
+                    <img class="movie-poster" src="{{ movie.poster }}" alt="Poster for {{ movie.title }}" loading="lazy">
+                </div>
+                <div class="row-meta">
+                    <p class="row-movie-title">{{ movie.title }}</p>
+                    <span class="row-year">{{ movie.year }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

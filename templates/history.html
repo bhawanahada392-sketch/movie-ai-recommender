@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}CineMate AI | History{% endblock %}
+{% block page_id %}history{% endblock %}
+
+{% block content %}
+<section class="page-panel">
+    <div class="page-intro">
+        <p class="section-eyebrow">Your recent visits</p>
+        <h1 class="page-title">History</h1>
+        <p class="page-description">A soft record of the stories you have explored.</p>
+    </div>
+
+    <div class="history-grid">
+        <div class="page-card">
+            <div class="page-card__head">
+                <h2 class="page-card__title">Recent searches</h2>
+                <button type="button" class="soft-btn" id="clear-history-btn">Clear history</button>
+            </div>
+            <div id="recent-searches-list" class="history-list"></div>
+        </div>
+
+        <div class="page-card">
+            <div class="page-card__head">
+                <h2 class="page-card__title">Recently viewed</h2>
+            </div>
+            <div id="viewed-movies-list" class="history-list"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

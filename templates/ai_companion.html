@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}CineMate AI | Companion{% endblock %}
+{% block page_id %}ai-companion{% endblock %}
+
+{% block content %}
+<section class="page-panel">
+    <div class="page-intro">
+        <p class="section-eyebrow">A thoughtful companion</p>
+        <h1 class="page-title">AI movie companion</h1>
+        <p class="page-description">Ask for a mood, a vibe, or a quick spoiler-free recommendation.</p>
+    </div>
+
+    <div class="companion-shell">
+        <div class="companion-prompts" aria-label="Suggested chat prompts">
+            <button type="button" class="prompt-chip" data-prompt="What should I watch after Interstellar?">What should I watch after Interstellar?</button>
+            <button type="button" class="prompt-chip" data-prompt="Explain Inception without spoilers.">Explain Inception without spoilers.</button>
+            <button type="button" class="prompt-chip" data-prompt="Recommend Marvel watch order.">Recommend Marvel watch order.</button>
+            <button type="button" class="prompt-chip" data-prompt="Suggest underrated horror movies.">Suggest underrated horror movies.</button>
+        </div>
+
+        <div id="chat-log" class="chat-log" aria-live="polite"></div>
+
+        <form id="chat-form" class="chat-form">
+            <label for="ai-question" class="visually-hidden">Ask the movie companion</label>
+            <input type="text" id="ai-question" name="question" placeholder="Type a movie question or ask for a recommendation" autocomplete="off">
+            <button type="submit" class="search-btn search-btn--compact">Send</button>
+            <button type="button" id="clear-chat-btn" class="soft-btn">Clear chat</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}CineMate AI | Watchlist{% endblock %}
+{% block page_id %}watchlist{% endblock %}
+
+{% block content %}
+<section class="page-panel">
+    <div class="page-intro">
+        <p class="section-eyebrow">Saved for later</p>
+        <h1 class="page-title">Your watchlist</h1>
+        <p class="page-description">A quiet shelf of stories you want to keep close.</p>
+    </div>
+
+    <div class="page-toolbar">
+        <label for="watchlist-search" class="visually-hidden">Search watchlist</label>
+        <input type="search" id="watchlist-search" class="watchlist-search" placeholder="Search your saved films" autocomplete="off">
+        <button type="button" class="soft-btn" id="clear-watchlist-btn">Clear all</button>
+    </div>
+
+    <div id="watchlist-grid" class="cards-container watchlist-grid"></div>
+</section>
+{% endblock %}

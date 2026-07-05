@@ -1,0 +1,26 @@
+{
+  "bahubali": {
+    "success": true,
+    "message": "",
+    "poster": "https://m.media-amazon.com/images/M/MV5BMGNjMjRjY2QtOTNiNi00ZmE0LTkwNjYtYTVhNDE2Yzk0OTZhXkEyXkFqcGc@._V1_SX300.jpg",
+    "rating": "7.9",
+    "genre": "Drama",
+    "plot": "Babhubali means a most powerful person, he can manage and control every situation and boss of the village.",
+    "runtime": "N/A",
+    "released": "01 Apr 2008",
+    "director": "N/A",
+    "language": "Hindi"
+  },
+  "shah rukh khan": {
+    "success": true,
+    "message": "",
+    "poster": "https://m.media-amazon.com/images/M/MV5BMTc0ODU3MDg2MV5BMl5BanBnXkFtZTgwNjUzODU5NjE@._V1_SX300.jpg",
+    "rating": "7.3",
+    "genre": "Documentary",
+    "plot": "N/A",
+    "runtime": "101 min",
+    "released": "N/A",
+    "director": "Gareth Jefferson Jones",
+    "language": "English"
+  }
+}
