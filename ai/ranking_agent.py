@@ -159,13 +159,15 @@ def calculate_rank_score(movie, intent):
     genre_overlap = get_genre_overlap(movie, intent)
     intent_match = get_intent_match(movie, intent)
     runtime_match = get_runtime_match(movie, intent)
+    poster_score = 1 if movie.get("poster") and movie.get("poster") != "N/A" else 0
 
     return (
-        similarity * 0.45
-        + rating * 0.20
+        similarity * 0.42
+        + rating * 0.18
         + genre_overlap * 0.20
         + intent_match * 0.10
         + runtime_match * 0.05
+        + poster_score * 0.05
     )
 
 

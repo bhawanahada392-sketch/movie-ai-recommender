@@ -1,4 +1,3 @@
-from ai.ai_picks import build_fallback_ai_pick_titles, generate_ai_picks
 from ai.chat_agent import build_fallback_answer
 
 
@@ -7,16 +6,20 @@ def test_chat_fallback_answer_for_horror():
     assert "horror" in answer.lower() or "scary" in answer.lower() or "The Others" in answer
 
 
-def test_ai_picks_fallback_for_regional_query():
-    titles = build_fallback_ai_pick_titles("hindi movie", [])
-    assert len(titles) >= 3
-    assert any("3 Idiots" in title for title in titles)
+def test_ai_picks_backend_list_removed():
+    import app as app_module
 
+    app_module.get_movie_details = lambda title, year=None: {
+        "success": False,
+        "message": "offline",
+    }
+    app_module.generate_overview_explanation = lambda searched, recs: "Explanation only."
+    app_module.rerank_indian_recommendations = lambda recs, title: recs
 
-def test_generate_ai_picks_uses_fallback_when_gemini_empty(monkeypatch):
-    monkeypatch.setattr("ai.ai_picks.call_gemini", lambda prompt: "")
-    monkeypatch.setattr("ai.ai_picks.get_movie_details", lambda title, year: {"success": False})
+    client = app_module.app.test_client()
+    data = client.post("/recommend", json={"movie": "Avatar"}).get_json()
 
-    picks = generate_ai_picks("horror", [{"title": "The Shining", "year": "1980", "genre": "Horror", "plot": "A haunted hotel."}])
-
-    assert len(picks) >= 3
+    assert data["success"]
+    assert data["recommendations"]
+    assert "ai_explanation" in data
+    assert "ai_picks" not in data

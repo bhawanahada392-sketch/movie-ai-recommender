@@ -22,5 +22,17 @@
     "released": "N/A",
     "director": "Gareth Jefferson Jones",
     "language": "English"
+  },
+  "srk": {
+    "success": true,
+    "message": "",
+    "poster": "",
+    "rating": "N/A",
+    "genre": "N/A",
+    "plot": "N/A",
+    "runtime": "N/A",
+    "released": "09 May 2018",
+    "director": "Lakki Gopal",
+    "language": "Kannada"
   }
 }

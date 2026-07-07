@@ -11,7 +11,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from flask import Flask, jsonify, render_template, request
 
-from ai.ai_picks import generate_ai_picks
 from ai.bollywood_rerank import rerank_indian_recommendations
 from ai.chat_agent import answer_movie_question
 from ai.collections import get_collection_movies, list_collections
@@ -32,6 +31,12 @@ from ai.recommendation_agent import (
     search_dataset_by_intent,
 )
 from ai.search_agent import rewrite_search_query
+from ai.watchlist_store import (
+    add_to_watchlist,
+    clear_watchlist,
+    get_watchlist,
+    remove_from_watchlist,
+)
 from api.omdb import get_movie_details
 from api.tmdb import discover_homepage_rows, search_movies
 
@@ -42,6 +47,11 @@ app = Flask(__name__)
 # OMDb requests are network-bound, so a small thread pool can fetch several
 # movie detail pages at the same time without changing recommendation order.
 OMDB_WORKER_COUNT = 5
+
+
+def usable_detail(value):
+    """Return True when an API/detail field has useful display text."""
+    return bool(value and value != "N/A" and value != "Not Available")
 
 
 @app.route("/")
@@ -94,6 +104,7 @@ def enrich_single_recommendation(recommendation):
     """
     title = recommendation["title"]
     year = recommendation.get("year", "")
+    not_available = "Not Available"
 
     # Fetch OMDb details using title and year.
     # get_movie_details still uses the existing in-memory cache.
@@ -102,34 +113,34 @@ def enrich_single_recommendation(recommendation):
     # Start with ML recommendation data
     movie_details = {
         "title": title,
-        "year": year,
+        "year": year or not_available,
         "similarity_score": recommendation["similarity_score"],
-        "poster": "",
-        "rating": "N/A",
-        "genre": "N/A",
-        "plot": "N/A",
-        "runtime": "N/A",
-        "released": "N/A",
-        "director": "N/A",
-        "language": "N/A",
+        "poster": recommendation.get("poster", ""),
+        "rating": recommendation.get("rating") or not_available,
+        "genre": recommendation.get("genre") or recommendation.get("genres") or not_available,
+        "plot": recommendation.get("plot") or recommendation.get("overview") or not_available,
+        "runtime": recommendation.get("runtime") or not_available,
+        "released": recommendation.get("released") or not_available,
+        "director": recommendation.get("director") or not_available,
+        "language": recommendation.get("language") or not_available,
     }
 
     # Merge OMDb fields when the API call succeeds
     if omdb_data.get("success"):
-        movie_details["poster"] = omdb_data.get("poster", "")
-        movie_details["rating"] = omdb_data.get("rating", "N/A")
-        movie_details["genre"] = omdb_data.get("genre", "N/A")
-        movie_details["plot"] = omdb_data.get("plot", "N/A")
-        movie_details["runtime"] = omdb_data.get("runtime", "N/A")
-        movie_details["released"] = omdb_data.get("released", "N/A")
-        movie_details["director"] = omdb_data.get("director", "N/A")
-        movie_details["language"] = omdb_data.get("language", "N/A")
+        for field in ["poster", "rating", "genre", "plot", "runtime", "released", "director", "language"]:
+            value = omdb_data.get(field)
+            if usable_detail(value):
+                movie_details[field] = value
     else:
         # Keep ML recommendation even if OMDb fails for one movie
         movie_details["omdb_message"] = omdb_data.get(
             "message",
             "Movie details unavailable.",
         )
+
+    for field in ["year", "rating", "genre", "plot", "runtime", "released", "director", "language"]:
+        if not movie_details.get(field) or movie_details[field] == "N/A":
+            movie_details[field] = not_available
 
     return movie_details
 
@@ -252,24 +263,28 @@ def recommend():
 
         # Step 1: Understand the title or natural-language request.
         intent = extract_intent(movie)
-        intent = improve_intent_with_dynamic_movie(intent)
 
-        # Step 2: Decide whether this is a known dataset title or
-        # a broader mood/genre request that should query TMDb.
-        result = None
-        tmdb_query = None
-        if intent.get("exact_movie_title") or intent.get("movie_title"):
+        # Step 2: Try the local dataset first. This preserves the search
+        # priority: exact title, actor, director, genre, partial title, fuzzy.
+        ml_start_time = time.perf_counter()
+        result = get_recommendations_for_intent(intent)
+        ml_duration = time.perf_counter() - ml_start_time
+        print(f"Timing - ML recommendation/search: {ml_duration:.2f}s")
+
+        if not result.get("success"):
+            intent = improve_intent_with_dynamic_movie(intent)
             ml_start_time = time.perf_counter()
             result = get_recommendations_for_intent(intent)
             ml_duration = time.perf_counter() - ml_start_time
-            print(f"Timing - ML recommendation: {ml_duration:.2f}s")
+            print(f"Timing - ML recommendation/search after metadata: {ml_duration:.2f}s")
 
-            if not result.get("success") and intent.get("keywords"):
-                ml_start_time = time.perf_counter()
-                result = search_dataset_by_intent(intent)
-                ml_duration = time.perf_counter() - ml_start_time
-                print(f"Timing - ML fallback keyword search: {ml_duration:.2f}s")
-        else:
+        if not result.get("success") and intent.get("keywords"):
+            ml_start_time = time.perf_counter()
+            result = search_dataset_by_intent(intent)
+            ml_duration = time.perf_counter() - ml_start_time
+            print(f"Timing - ML fallback keyword search: {ml_duration:.2f}s")
+
+        if not result.get("success") and not intent.get("movie_title"):
             tmdb_query = rewrite_search_query(movie)
             tmdb_movies = search_movies(tmdb_query or movie)
 
@@ -307,11 +322,12 @@ def recommend():
             enriched_recommendations,
             intent,
         )[:10]
-        searched_title = result.get("resolved_title") or result.get("movie") or movie
+        searched_title = movie
+        resolved_title = result.get("resolved_title") or result.get("movie") or movie
 
         ranked_recommendations = rerank_indian_recommendations(
             ranked_recommendations,
-            searched_title,
+            resolved_title,
         )
 
         ranked_recommendations = add_individual_reasons(
@@ -322,9 +338,8 @@ def recommend():
 
         result["recommendations"] = ranked_recommendations
 
-        ai_picks = generate_ai_picks(movie, ranked_recommendations)
-        if ai_picks:
-            result["ai_picks"] = ai_picks
+        result["movie"] = movie
+        result["resolved_title"] = resolved_title
 
         # Step 5: Optionally add a friendly explanation.
         # If Gemini is unavailable, this returns an empty string and

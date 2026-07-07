@@ -41,7 +41,7 @@ function escapeHtml(text) {
 
 function cleanValue(value, fallback) {
     if (!value || value === "N/A") {
-        return fallback;
+        return fallback || "Not Available";
     }
 
     return value;
@@ -152,6 +152,17 @@ function addViewedMovie(movie) {
     renderHistory();
 }
 
+function removeViewedMovie(index) {
+    const itemIndex = Number(index);
+    if (!Number.isInteger(itemIndex) || itemIndex < 0 || itemIndex >= viewedMovies.length) {
+        return;
+    }
+
+    viewedMovies.splice(itemIndex, 1);
+    writeStorage(STORAGE_KEYS.viewedMovies, viewedMovies);
+    renderHistory();
+}
+
 function isMovieSaved(movie) {
     const key = getMovieKey(movie);
     return watchlistItems.some(function (item) {
@@ -225,13 +236,13 @@ function renderWatchlist() {
     let html = "";
     filteredItems.forEach(function (movie) {
         const posterUrl = getPosterUrl(movie.poster);
-        const title = cleanValue(movie.title, "Untitled film");
-        const year = cleanValue(movie.year, "");
-        const rating = cleanValue(movie.rating, "Not rated");
-        const runtime = cleanValue(movie.runtime, "Runtime unknown");
-        const plot = cleanValue(movie.plot, "A little mystery still surrounds this one.");
-        const director = cleanValue(movie.director, "A storyteller");
-        const language = cleanValue(movie.language, "A language of cinema");
+        const title = cleanValue(movie.title, "Not Available");
+        const year = cleanValue(movie.year, "Not Available");
+        const rating = cleanValue(movie.rating, "Not Available");
+        const runtime = cleanValue(movie.runtime, "Not Available");
+        const plot = cleanValue(movie.plot, "Not Available");
+        const director = cleanValue(movie.director, "Not Available");
+        const language = cleanValue(movie.language, "Not Available");
 
         html += '<article class="movie-card">';
         html += '<div class="poster-wrapper"><img class="movie-poster" src="' + escapeHtml(posterUrl) + '" alt="Poster for ' + escapeHtml(title) + '" loading="lazy"></div>';
@@ -270,8 +281,8 @@ function renderHistory() {
         if (!viewedMovies.length) {
             viewedList.innerHTML = '<div class="empty-inline">No viewed films recorded yet.</div>';
         } else {
-            viewedList.innerHTML = '<ul class="history-list-items">' + viewedMovies.map(function (item) {
-                return '<li class="history-item"><span>' + escapeHtml(item.title) + '</span><span class="history-pill">' + escapeHtml(item.year || "Recent") + '</span></li>';
+            viewedList.innerHTML = '<ul class="history-list-items">' + viewedMovies.map(function (item, index) {
+                return '<li class="history-item"><span>' + escapeHtml(item.title) + '</span><span class="history-item-actions"><span class="history-pill">' + escapeHtml(item.year || "Recent") + '</span><button type="button" class="history-delete-btn" data-action="remove-viewed" data-index="' + index + '" aria-label="Remove ' + escapeHtml(item.title) + ' from recently viewed">&times;</button></span></li>';
             }).join("") + '</ul>';
         }
     }
@@ -362,13 +373,13 @@ function renderAiPicksSection(aiPicks) {
 
     aiPicks.forEach(function (movie) {
         const posterUrl = getPosterUrl(movie.poster);
-        const title = cleanValue(movie.title, "Untitled film");
-        const year = cleanValue(movie.year, "");
-        const rating = cleanValue(movie.rating, "Not rated");
-        const runtime = cleanValue(movie.runtime, "Runtime unknown");
-        const plot = cleanValue(movie.plot, "A little mystery still surrounds this one.");
-        const director = cleanValue(movie.director, "A storyteller");
-        const language = cleanValue(movie.language, "A language of cinema");
+        const title = cleanValue(movie.title, "Not Available");
+        const year = cleanValue(movie.year, "Not Available");
+        const rating = cleanValue(movie.rating, "Not Available");
+        const runtime = cleanValue(movie.runtime, "Not Available");
+        const plot = cleanValue(movie.plot, "Not Available");
+        const director = cleanValue(movie.director, "Not Available");
+        const language = cleanValue(movie.language, "Not Available");
         const saved = isMovieSaved(movie);
 
         html += '<article class="movie-card ai-pick-card">';
@@ -412,22 +423,18 @@ function showResults(data) {
     addRecentSearch(query || data.movie || "");
     addViewedMovie({ title: data.movie || "", year: "", poster: "" });
 
-    let html = '<div class="results-header"><p class="section-eyebrow">Picked especially for you</p><h2 class="section-title">Because you loved ' + escapeHtml(data.movie || query || "this title") + '</h2><p class="section-note">A small bouquet of films with a familiar kind of magic.</p></div>';
-
-    if (data.ai_explanation) {
-        html += '<div class="companion-section"><p class="section-eyebrow">A little note for your watchlist</p><h2 class="companion-title">Why these feel right</h2><p class="companion-text">' + escapeHtml(data.ai_explanation) + '</p></div>';
-    }
+    let html = '<div class="results-header"><p class="section-eyebrow">Picked especially for you</p><h2 class="section-title">Because you searched ' + escapeHtml(data.movie || query || "this title") + '</h2><p class="section-note">A small bouquet of films with a familiar kind of magic.</p></div>';
 
     html += '<div class="cards-container">';
     data.recommendations.forEach(function (movie) {
         const posterUrl = getPosterUrl(movie.poster);
-        const title = cleanValue(movie.title, "Untitled film");
-        const year = cleanValue(movie.year, "");
-        const rating = cleanValue(movie.rating, "Not rated");
-        const runtime = cleanValue(movie.runtime, "Runtime unknown");
-        const plot = cleanValue(movie.plot, "A little mystery still surrounds this one.");
-        const director = cleanValue(movie.director, "A storyteller");
-        const language = cleanValue(movie.language, "A language of cinema");
+        const title = cleanValue(movie.title, "Not Available");
+        const year = cleanValue(movie.year, "Not Available");
+        const rating = cleanValue(movie.rating, "Not Available");
+        const runtime = cleanValue(movie.runtime, "Not Available");
+        const plot = cleanValue(movie.plot, "Not Available");
+        const director = cleanValue(movie.director, "Not Available");
+        const language = cleanValue(movie.language, "Not Available");
         const saved = isMovieSaved(movie);
 
         html += '<article class="movie-card">';
@@ -446,6 +453,10 @@ function showResults(data) {
     });
 
     html += '</div>';
+
+    if (data.ai_explanation) {
+        html += '<div class="companion-section companion-section--after-grid"><p class="section-eyebrow">A little note for your watchlist</p><h2 class="companion-title">Why these feel right</h2><p class="companion-text">' + escapeHtml(data.ai_explanation) + '</p></div>';
+    }
 
     if (Array.isArray(data.ai_picks) && data.ai_picks.length) {
         html += renderAiPicksSection(data.ai_picks);
@@ -590,6 +601,7 @@ function initWatchlistPage() {
 
 function initHistoryPage() {
     const clearHistoryBtn = document.getElementById("clear-history-btn");
+    const viewedList = document.getElementById("viewed-movies-list");
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener("click", function () {
             recentSearches = [];
@@ -597,6 +609,15 @@ function initHistoryPage() {
             writeStorage(STORAGE_KEYS.recentSearches, recentSearches);
             writeStorage(STORAGE_KEYS.viewedMovies, viewedMovies);
             renderHistory();
+        });
+    }
+    if (viewedList) {
+        viewedList.addEventListener("click", function (event) {
+            const button = event.target.closest("button");
+            if (!button || button.getAttribute("data-action") !== "remove-viewed") {
+                return;
+            }
+            removeViewedMovie(button.getAttribute("data-index"));
         });
     }
     renderHistory();
@@ -610,6 +631,7 @@ function initAiCompanionPage() {
     const chatForm = document.getElementById("chat-form");
     const chatLog = document.getElementById("chat-log");
     const questionInput = document.getElementById("ai-question");
+    const clearChatButton = document.getElementById("clear-chat-btn");
     const promptButtons = document.querySelectorAll(".prompt-chip");
     const submitButton = chatForm?.querySelector("button[type='submit']");
     const STORAGE_KEY = "cinemate-chat-history";
@@ -743,8 +765,14 @@ function initAiCompanionPage() {
     if (clearChatButton) {
         clearChatButton.addEventListener("click", function () {
             history = [];
-            writeHistory(history);
+            try {
+                window.sessionStorage.removeItem(STORAGE_KEY);
+            } catch (error) {
+                writeHistory(history);
+            }
             chatLog.innerHTML = "";
+            questionInput.value = "";
+            questionInput.focus();
         });
     }
 }

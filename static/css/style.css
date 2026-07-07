@@ -84,7 +84,7 @@ button {
     z-index: 2;
     width: min(100%, var(--max-page));
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 clamp(16px, 3vw, 24px);
 }
 
 .garden-backdrop {
@@ -278,6 +278,7 @@ button {
     min-height: 100vh;
     display: grid;
     place-items: center;
+    width: 100%;
     padding: 72px 0 96px;
     text-align: center;
 }
@@ -285,11 +286,10 @@ button {
 .hero::after {
     content: "";
     position: absolute;
-    left: 50%;
+    left: 0;
+    right: 0;
     bottom: 34px;
-    width: min(720px, 72vw);
     height: 1px;
-    transform: translateX(-50%);
     background: linear-gradient(90deg, transparent, rgba(217, 199, 163, .3), transparent);
 }
 
@@ -324,12 +324,12 @@ button {
 .hero-content {
     position: relative;
     z-index: 2;
-    width: min(100%, 790px);
+    width: min(100%, 780px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 8px;
-    text-transform: uppercase;
+    padding: 0;
+    text-transform: none;
 }
 
 .browse-section {
@@ -458,7 +458,8 @@ button {
 }
 
 .search-section {
-    width: min(100%, 780px);
+    width: 100%;
+    max-width: 780px;
     margin-top: 36px;
 }
 
@@ -565,7 +566,7 @@ button {
     display: grid;
     justify-items: center;
     gap: 10px;
-    margin-bottom: 38px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
@@ -594,7 +595,7 @@ button {
 .cards-container,
 .skeleton-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
     gap: 28px;
 }
 
@@ -805,6 +806,10 @@ button {
     box-shadow: var(--shadow-card);
     opacity: 1;
     transform: none;
+}
+
+.companion-section--after-grid {
+    margin-top: 54px;
 }
 
 .companion-title {
@@ -1290,6 +1295,7 @@ button {
 .watchlist-search {
     flex: 1;
     min-width: 220px;
+    height: 48px;
     padding: 12px 16px;
     border: 1px solid rgba(255, 255, 255, .1);
     border-radius: 999px;
@@ -1310,6 +1316,10 @@ button {
     margin-top: 8px;
 }
 
+.watchlist-grid {
+    display: block;
+}
+
 .collection-skeleton {
     min-height: 180px;
 }
@@ -1318,16 +1328,21 @@ button {
     position: sticky;
     top: 0;
     z-index: 20;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    width: min(100%, var(--max-page));
-    margin: 0 auto;
+
+    width: 100%;
     padding: 18px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, .08);
+
     background: rgba(21, 23, 21, .78);
     backdrop-filter: blur(16px);
+
+    border-bottom: 1px solid rgba(255,255,255,.08);
+
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .brand-mark {
@@ -1380,8 +1395,8 @@ button {
     position: relative;
     z-index: 2;
     display: grid;
-    gap: 24px;
-    padding: 38px 0 18px;
+    gap: 28px;
+    padding: 42px 0 18px;
 }
 
 .page-intro {
@@ -1409,7 +1424,7 @@ button {
     flex-wrap: wrap;
     gap: 12px;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .page-card {
@@ -1438,7 +1453,9 @@ button {
 .history-grid {
     display: grid;
     gap: 24px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 760px);
+    margin: 0 auto;
+    grid-template-columns: 1fr;
 }
 
 .history-list-items {
@@ -1457,12 +1474,41 @@ button {
     border-bottom: 1px solid rgba(255, 255, 255, .06);
 }
 
+.history-item-actions {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 8px;
+    align-items: center;
+}
+
 .history-pill {
     padding: 4px 10px;
     border-radius: 999px;
     color: var(--accent-primary);
     background: rgba(143, 181, 157, .12);
     font: 600 .72rem/1 var(--font-heading);
+}
+
+.history-delete-btn {
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 1px solid rgba(217, 199, 163, .2);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, .035);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: color .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease);
+}
+
+.history-delete-btn:hover {
+    color: var(--cream);
+    border-color: rgba(216, 168, 185, .34);
+    background: rgba(216, 168, 185, .12);
+    transform: translateY(-1px);
 }
 
 .companion-shell {
@@ -1541,7 +1587,7 @@ button {
 
 .results-stage {
     display: grid;
-    gap: 20px;
+    gap: 30px;
 }
 
 .search-form--compact {
@@ -1551,10 +1597,6 @@ button {
 
 .search-btn--compact {
     min-width: 116px;
-}
-
-.watchlist-grid .cards-container {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .row-cards::-webkit-scrollbar {
@@ -1584,14 +1626,13 @@ button {
 @media (max-width: 1040px) {
     .cards-container,
     .skeleton-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
     }
 
     .branch {
         opacity: .24;
     }
 
-    .watchlist-grid .cards-container,
     .history-grid {
         grid-template-columns: 1fr;
     }
@@ -1658,8 +1699,8 @@ button {
     }
 
     .site-header {
-        padding: 16px;
-    }
+    padding: 16px 20px;
+}
 
     .nav-toggle {
         display: inline-flex;
@@ -1703,12 +1744,14 @@ button {
     }
 
     #movie-search,
+    #results-search,
     .search-btn {
         height: 58px;
         border-radius: 22px;
     }
 
-    #movie-search {
+    #movie-search,
+    #results-search {
         padding-right: 12px;
         padding-left: 50px;
         font-size: .88rem;

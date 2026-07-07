@@ -18,6 +18,33 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
 
+def build_fallback_answer(question):
+    """
+    Return a simple local answer when Gemini is unavailable.
+
+    Args:
+        question (str): User question or request.
+
+    Returns:
+        str: Short beginner-friendly fallback answer.
+    """
+    text = str(question or "").lower()
+
+    if "horror" in text or "scary" in text:
+        return "For a scary movie mood, try The Others, The Conjuring, or A Quiet Place."
+
+    if "comedy" in text or "funny" in text:
+        return "For comedy, try 3 Idiots, The Grand Budapest Hotel, or Superbad."
+
+    if "romance" in text or "date" in text:
+        return "For romance, try Before Sunrise, La La Land, or Jab We Met."
+
+    if "sci-fi" in text or "science fiction" in text or "space" in text:
+        return "For science fiction, try Interstellar, Arrival, or The Martian."
+
+    return "Try searching by a movie title, actor, director, or genre for better recommendations."
+
+
 def build_chat_prompt(question, movie=None):
     """
     Create a no-spoiler chat prompt.
@@ -62,7 +89,7 @@ def answer_movie_question(question, movie=None):
     """
     if not GEMINI_API_KEY:
         print("Chat skipped: GEMINI_API_KEY is missing.")
-        return ""
+        return build_fallback_answer(question)
 
     prompt = build_chat_prompt(question, movie)
 
@@ -98,4 +125,4 @@ def answer_movie_question(question, movie=None):
     except Exception as error:
         print(f"Chat error: {error}")
         traceback.print_exc()
-        return ""
+        return build_fallback_answer(question)

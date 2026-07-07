@@ -1,9 +1,8 @@
 """
 train_model.py - Train the movie recommendation model.
 
-This script reads processed movie data, builds a TF-IDF matrix,
-calculates cosine similarity between all movies, and saves the
-results so recommender.py can use them without retraining.
+This script reads processed movie data, builds a TF-IDF matrix, and saves
+it so recommender.py can calculate cosine similarity quickly on demand.
 """
 
 import os
@@ -22,6 +21,8 @@ MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_FILE = os.path.join(DATA_DIR, "processed_movies.csv")
 SIMILARITY_FILE = os.path.join(MODELS_DIR, "similarity.pkl")
 VECTORIZER_FILE = os.path.join(MODELS_DIR, "tfidf_vectorizer.pkl")
+TEMP_SIMILARITY_FILE = os.path.join(MODELS_DIR, "similarity_new.pkl")
+TEMP_VECTORIZER_FILE = os.path.join(MODELS_DIR, "tfidf_vectorizer_new.pkl")
 
 # Columns required for training
 REQUIRED_COLUMNS = ["id", "title", "combined_features"]
@@ -67,7 +68,7 @@ def display_dataset_info(dataframe):
     print(f"Dataset shape: {dataframe.shape}")
 
 
-def save_models(similarity_matrix, vectorizer):
+def save_models(tfidf_matrix, vectorizer):
     """
     Save the trained similarity matrix and TF-IDF vectorizer to disk.
 
@@ -75,7 +76,7 @@ def save_models(similarity_matrix, vectorizer):
     We train once and reuse the saved files many times later.
 
     Args:
-        similarity_matrix: Cosine similarity scores between movies.
+        tfidf_matrix: Sparse TF-IDF movie matrix.
         vectorizer: Fitted TF-IDF vectorizer object.
     """
     print("\nSaving trained model...")
@@ -83,14 +84,24 @@ def save_models(similarity_matrix, vectorizer):
     # Create the models folder if it does not exist yet
     os.makedirs(MODELS_DIR, exist_ok=True)
 
-    # pickle.dump writes a Python object to a .pkl file
-    with open(SIMILARITY_FILE, "wb") as file:
-        pickle.dump(similarity_matrix, file)
+    # Write temporary files first. If this step fails, the old working model
+    # files remain untouched.
+    with open(TEMP_SIMILARITY_FILE, "wb") as file:
+        pickle.dump(
+            {
+                "kind": "tfidf_matrix",
+                "matrix": tfidf_matrix,
+            },
+            file,
+        )
 
-    with open(VECTORIZER_FILE, "wb") as file:
+    with open(TEMP_VECTORIZER_FILE, "wb") as file:
         pickle.dump(vectorizer, file)
 
-    print(f"Saved similarity matrix to: {SIMILARITY_FILE}")
+    os.replace(TEMP_SIMILARITY_FILE, SIMILARITY_FILE)
+    os.replace(TEMP_VECTORIZER_FILE, VECTORIZER_FILE)
+
+    print(f"Saved TF-IDF matrix to: {SIMILARITY_FILE}")
     print(f"Saved TF-IDF vectorizer to: {VECTORIZER_FILE}")
 
 
@@ -140,20 +151,17 @@ def main():
     # Shape is (number_of_movies, number_of_words_in_vocabulary)
     print(f"TF-IDF matrix shape: {tfidf_matrix.shape}")
 
-    # STEP 6: Calculate Cosine Similarity
-    print("\nCalculating cosine similarity...")
+    # STEP 6: Verify Cosine Similarity works on one row
+    print("\nVerifying cosine similarity...")
 
     # Cosine similarity measures how similar two movies are (0 to 1).
-    # 1.0 = very similar, 0.0 = not similar at all.
-    # It works well for recommendations because it compares the DIRECTION
-    # of two text vectors, not their length. Two sci-fi movies with
-    # similar words will have vectors pointing in a similar direction.
-    similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
-
-    print(f"Similarity matrix shape: {similarity_matrix.shape}")
+    # Instead of saving a huge all-vs-all matrix, we save the smaller
+    # TF-IDF matrix and calculate scores only for the searched movie.
+    sample_scores = cosine_similarity(tfidf_matrix[0], tfidf_matrix)
+    print(f"Sample cosine similarity shape: {sample_scores.shape}")
 
     # STEP 7: Save both trained objects to pickle files
-    save_models(similarity_matrix, vectorizer)
+    save_models(tfidf_matrix, vectorizer)
 
     print("\nTraining completed successfully.")
 
