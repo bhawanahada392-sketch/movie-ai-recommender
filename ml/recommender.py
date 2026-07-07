@@ -12,6 +12,8 @@ import sys
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
+from functools import lru_cache
+
 # Folder paths (project root is one level above ml/)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -318,7 +320,12 @@ def row_to_recommendation(index, similarity_score):
         "poster": clean_display_value(row.get("poster", "")),
         "rating": clean_display_value(row.get("rating", "")),
     }
-
+@lru_cache(maxsize=200)
+def get_similarity_scores(movie_index):
+    return cosine_similarity(
+        tfidf_matrix[movie_index],
+        tfidf_matrix,
+    ).flatten()
 
 def build_recommendation_list(movie_index, number_of_movies):
     """
@@ -336,12 +343,9 @@ def build_recommendation_list(movie_index, number_of_movies):
     # saved TF-IDF matrix. Older model files may already contain the
     # full all-vs-all similarity matrix.
     if tfidf_matrix is not None:
-        similarity_scores = cosine_similarity(
-            tfidf_matrix[movie_index],
-            tfidf_matrix,
-        ).flatten()
+       similarity_scores = get_similarity_scores(movie_index)
     else:
-        similarity_scores = similarity_matrix[movie_index]
+       similarity_scores = similarity_matrix[movie_index]
 
     # Sort by similarity first, then by metadata richness. This keeps the ML
     # score in charge while preferring complete movie rows when scores tie.
